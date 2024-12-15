@@ -69,6 +69,7 @@ async function startProcess() {
       return true; // CAPTCHA solved successfully
     }
   }
+  c
 
   // Step 2: Check for available appointments
   async function checkAppointmentsAvailable() {
