@@ -57,7 +57,7 @@ async function startProcess() {
     // Check if there is an error message indicating incorrect CAPTCHA
     const errorSelector = "div.global-error p";
     const errorExists = (await page.$(errorSelector)) !== null;
-    if (errorExists) {
+    if (errorExists) {the
       console.error(
         `CAPTCHA was solved incorrectly on attempt ${attempt}. Retrying...`
       );

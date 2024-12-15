@@ -116,7 +116,7 @@ async function startProcess() {
 
   try {
     await page.goto(
-      "https://service2.diplo.de/rktermin/extern/appointment_showMonth.do?locationCode=isla&realmId=190&categoryId=3238",
+      "https://service2.diplo.de/rktermin/extern/appointment_showMonth.do?locationCode=kara&realmId=967&categoryId=2801",
       { waitUntil: "domcontentloaded" }
     );
     const captchaSolved = await solveCaptcha();
