@@ -46,7 +46,7 @@ const isHeadless = process.env.HEADLESS === "true";
     const continueButtonSelector =
       "#appointment_captcha_month_appointment_showMonth";
     await page.waitForSelector(continueButtonSelector, { timeout: 5000 });
-    await page.click(continueButtonSelector);
+    // await page.click(continueButtonSelector);
     await page.waitForNavigation({ waitUntil: "domcontentloaded", timeout: 10000 });
 
     // Check if appointments are available and click the link

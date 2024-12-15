@@ -71,7 +71,7 @@ async function startProcess() {
       console.log("Appointments are available. Clicking the link...");
       await page.click(availableLinkSelector);
       await page.goto(
-'        https://service2.diplo.de/rktermin/extern/appointment_showForm.do?locationCode=isla&realmId=190&categoryId=3239&dateStr=07.01.2025&openingPeriodId=78379',        { waitUntil: "domcontentloaded" }
+'        https://service2.diplo.de/rktermin/extern/appointment_showForm.do?locationCode=isla&realmId=190&categoryId=3238&dateStr=07.01.2025&openingPeriodId=79185',        { waitUntil: "domcontentloaded" }
       );
       // Fill in the booking form fields
       await fillBookingForm();
@@ -105,23 +105,23 @@ async function startProcess() {
       "Für mich / For me"
     ); // For whom do you want to apply?
     await page.select("#appointment_newAppointmentForm_fields_2__content", "1"); // For how many children?
-    await page.type("#fields3content", "01.01.1990"); // Example birth date
+    await page.type("#appointment_newAppointmentForm_fields_3__content", "01.01.1990"); // Example birth date
 
     const submitButtonSelector =
       "#appointment_newAppointmentForm_appointment_addAppointment";
-    await page.click(submitButtonSelector);
-    await page.waitForNavigation({ waitUntil: "domcontentloaded" });
+    // await page.click(submitButtonSelector);
+    // await page.waitForNavigation({ waitUntil: "domcontentloaded" });
     console.log("Booking form submitted successfully!");
   }
 
   try {
     await page.goto(
-      "https://service2.diplo.de/rktermin/extern/appointment_showMonth.do?locationCode=isla&realmId=190&categoryId=3239",
+      "https://service2.diplo.de/rktermin/extern/appointment_showMonth.do?locationCode=isla&realmId=190&categoryId=3238",
       { waitUntil: "domcontentloaded" }
     );
     const captchaSolved = await solveCaptcha();
     if (captchaSolved && !(await checkAppointmentsAvailable())) {
-      await browser.close(); // Close the browser and restart the process if no appointments are available
+      // await browser.close(); // Close the browser and restart the process if no appointments are available
       setTimeout(startProcess, 3000); // Wait 3 seconds before restarting the process
     }
     else{
@@ -129,7 +129,7 @@ async function startProcess() {
     }
   } catch (error) {
     console.error(`An error occurred during the booking process: ${error}`);
-    await browser.close();
+    // await browser.close();
   }
 }
 
