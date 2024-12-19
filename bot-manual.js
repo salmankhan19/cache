@@ -1,13 +1,12 @@
 const puppeteer = require("puppeteer");
 const { Solver } = require("2captcha");
-const moment = require("moment-timezone");
 
 const solver = new Solver("0ed306b4166e9c81e9c3c01222af4a1a");
 const isHeadless = process.env.HEADLESS === "true";
+const maxCaptchaAttempts = 50; // Limit the number of CAPTCHA retries to prevent infinite loops
 const baseURL = "https://service2.diplo.de/rktermin/"; // Base URL for prepending
 
 async function startProcess() {
-  const startTime = new Date(); 
   const browser = await puppeteer.launch({
     headless: isHeadless,
     args: ["--no-sandbox", "--disable-setuid-sandbox"],
@@ -17,49 +16,23 @@ async function startProcess() {
 
   // Step 1: Skip CAPTCHA solving and wait for manual CAPTCHA solution
   async function waitForContinueButton() {
-    console.log("Please solve the CAPTCHA manually and click the 'Continue' button after it's 6 PM.");
-    
-    // Wait indefinitely until the 'Continue' button is visible
-    await page.waitForSelector("#appointment_captcha_month_appointment_showMonth", { timeout: 0 });
-    console.log("CAPTCHA solved manually, waiting until 6 PM to proceed...");
-  
-    // Wait until it's exactly 6 PM in Virginia to perform actions
-    await waitUntilTime(12, 58);
-    console.log("It's 12.20 PM in Virginia, proceeding with form submission...");
-  
-    // Perform the click and handle navigation
+    console.log(
+      "Please solve the CAPTCHA manually and click the 'Continue' button."
+    );
 
-    await performActionsAfterTime();
-  }
-  
-  // Waits until a specific hour and minute in the Virginia time zone
-  async function waitUntilTime(hour, minute) {
-    return new Promise((resolve) => {
-      const checkTime = setInterval(() => {
-        const now = moment().tz("America/New_York");
-        if (now.hour() === hour && now.minute() === minute) {
+    // Wait for the page to load after CAPTCHA and the continue button to appear
+    await page.waitForSelector(
+      "#appointment_captcha_month_appointment_showMonth",
+      { timeout: 0 }
+    );
 
-          clearInterval(checkTime);
-          resolve();
-        } else {
-          console.log(`Current time in Virginia: ${now.format("YYYY-MM-DD HH:mm:ss")}`);
-        }
-      }, 1000); // Check every second
+    // Now, wait for the redirection after the CAPTCHA is solved manually
+    await page.waitForNavigation({
+      waitUntil: "domcontentloaded",
+      timeout: 120000,
     });
-  }
-  
-  // Perform clicking the continue button and manage navigation
-  async function performActionsAfterTime() {
-    try {
-      const continueButtonSelector = "#appointment_captcha_month_appointment_showMonth";
-      await page.click(continueButtonSelector);
-      console.log("Continue button clicked successfully.");
-  
-      await page.waitForNavigation({ waitUntil: "domcontentloaded", timeout: 120000 });
-      console.log("Navigation successful after clicking the continue button.");
-    } catch (error) {
-      console.error("Error during form submission or navigation: ", error);
-    }
+
+    console.log("CAPTCHA solved manually, continuing the process...");
   }
 
   // Step 2: Check for available appointments
@@ -120,6 +93,24 @@ async function startProcess() {
   }
 
   // Step 4: Fill the booking form
+  // async function fillBookingForm() {
+  //   console.log("Filling in booking form...");
+
+  //   await page.type("#appointment_newAppointmentForm_lastname", "Doe"); // Example last name
+  //   await page.type("#appointment_newAppointmentForm_firstname", "John"); // Example first name
+  //   await page.type("#appointment_newAppointmentForm_email", "john.doe@example.com"); // Example email
+  //   await page.type("#appointment_newAppointmentForm_emailrepeat", "john.doe@example.com"); // Repeat email
+  //   await page.type("#appointment_newAppointmentForm_fields_0__content", "123456789"); // Passport number
+  //   await page.select("#appointment_newAppointmentForm_fields_1__content", "Für mich / For me"); // For whom?
+  //   await page.select("#appointment_newAppointmentForm_fields_2__content", "1"); // For how many children?
+  //   await page.type("#appointment_newAppointmentForm_fields_3__content", "01.01.1990"); // Example birth date
+
+  //   const submitButtonSelector = "#appointment_newAppointmentForm_appointment_addAppointment";
+  //   await page.click(submitButtonSelector);
+  //   await page.waitForNavigation({ waitUntil: "domcontentloaded" });
+
+  //   console.log("Booking form submitted successfully!");
+  // }
   async function fillBookingForm() {
     console.log("Filling in booking form...");
 
@@ -138,14 +129,14 @@ async function startProcess() {
       "#appointment_newAppointmentForm_fields_0__content",
       "123456789"
     ); // Passport number
-    // await page.select(
-    //   "#appointment_newAppointmentForm_fields_1__content",
-    //   "Sindh"
-    // ); // For whom?
-    // await page.select(
-    //   "#appointment_newAppointmentForm_fields_2__content",
-    //   "Pakistan"
-    // ); // For whom?
+    await page.select(
+      "#appointment_newAppointmentForm_fields_1__content",
+      "Sindh"
+    ); // For whom?
+    await page.select(
+      "#appointment_newAppointmentForm_fields_2__content",
+      "Pakistan"
+    ); // For whom?
 
     // Solve the CAPTCHA
     console.log("Solving CAPTCHA on the booking form...");
@@ -174,12 +165,8 @@ async function startProcess() {
     console.log("Submitting the form...");
     const submitButtonSelector =
       "#appointment_newAppointmentForm_appointment_addAppointment";
-    await page.click(submitButtonSelector);
+    // await page.click(submitButtonSelector);
     console.log("submit ");
-    const endTime = new Date(); // Capture the end time
-    const duration = (endTime - startTime) / 1000; // Calculate duration in seconds
-    console.log("submit in " + duration + " seconds"); // Print the duration
-    console.log(endTime, 'endTime');
 
     try {
       await page.waitForNavigation({
